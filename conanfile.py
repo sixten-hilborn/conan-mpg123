@@ -66,11 +66,11 @@ class Mpg123Conan(ConanFile):
         self.copy(pattern="mpg123.h*", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
         if self.settings.compiler == 'Visual Studio':
             self.copy("mpg123.h", dst="include", src=os.path.join(self.source_subfolder, "ports", "MSVC++"))
-        self.copy(pattern="*.dll", dst="bin", keep_path=False)
-        self.copy(pattern="*.lib", dst="lib", keep_path=False)
-        self.copy(pattern="*.a", dst="lib", keep_path=False)
-        self.copy(pattern="*.so*", dst="lib", keep_path=False)
-        self.copy(pattern="*.dylib", dst="lib", keep_path=False)
+        self.copy(pattern="*mpg123.dll", dst="bin", keep_path=False)
+        self.copy(pattern="*mpg123.lib", dst="lib", keep_path=False)
+        self.copy(pattern="*mpg123.a", dst="lib", keep_path=False)
+        self.copy(pattern="*mpg123.so", dst="lib", keep_path=False)
+        self.copy(pattern="*mpg123.dylib", dst="lib", keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
