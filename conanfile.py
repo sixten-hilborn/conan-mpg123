@@ -50,7 +50,10 @@ class Mpg123Conan(ConanFile):
     def _build_vs(self):
         msbuild = MSBuild(self)
         # The VS project defines different configurations for Dll/static and "Generic"/x86-optimizations (SSE etc) 
-        build_type = "{0}_x86{1}".format(self.settings.build_type, "_Dll" if self.options.shared else "")
+        dll_suffix = "_Dll" if self.options.shared else ""
+        # suffix "x86" uses more CPU specific optimizations, however it doesn't compile for arch==x86, only arch==x86_64
+        optimization_suffix = "x86" if self.settings.arch == "x86_64" else "Generic"
+        build_type = "{0}_{1}{2}".format(self.settings.build_type, optimization_suffix, dll_suffix)
         msbuild.build("{0}/ports/MSVC++/2015/win32/libmpg123/libmpg123.vcxproj".format(self.source_subfolder), build_type=build_type)
 
     def _build_configure(self):
