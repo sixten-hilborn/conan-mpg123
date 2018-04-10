@@ -48,10 +48,10 @@ class Mpg123Conan(ConanFile):
             self._build_configure()
 
     def _build_vs(self):
-        if not self.options.shared:
-            raise Exception('Only shared builds are supported for Visual Studio')
         msbuild = MSBuild(self)
-        msbuild.build("{0}/ports/MSVC++/2015/win32/mpg123.sln".format(self.source_subfolder))
+        # The VS project defines different configurations for Dll/static and "Generic"/x86-optimizations (SSE etc) 
+        build_type = "{0}_x86{1}".format(self.settings.build_type, "_Dll" if self.options.shared else "")
+        msbuild.build("{0}/ports/MSVC++/2015/win32/libmpg123/libmpg123.vcxproj".format(self.source_subfolder), build_type=build_type)
 
     def _build_configure(self):
         with tools.chdir(self.source_subfolder):
