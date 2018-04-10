@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import ConanFile, AutoToolsBuildEnvironment, MSBuild, tools
 import os
 
 
@@ -11,14 +11,8 @@ class Mpg123Conan(ConanFile):
     description = "Fast MPEG Audio decoder library"
     url = "https://github.com/sixten-hilborn/conan-mpg123"
     homepage = "https://www.mpg123.de"
-
-    # Indicates License type of the packaged library
     license = "LGPL 2.1"
-
-    # Packages the license for the conanfile.py
-    exports = ["LICENSE.md"]
-
-    # Options may need to change depending on the packaged library.
+    exports = ["LICENSE.md"]  # Packages the license for the conanfile.py
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
@@ -29,27 +23,15 @@ class Mpg123Conan(ConanFile):
         "fPIC=True"
     )
 
-    # Custom attributes for Bincrafters recipe conventions
     source_subfolder = "source_subfolder"
     build_subfolder = "build_subfolder"
 
-    # Use version ranges for dependencies unless there's a reason not to
-    # Update 2/9/18 - Per conan team, ranges are slow to resolve.
-    # So, with libs like zlib, updates are very rare, so we now use static version
-
-
-    #requires = (
-    #    "OpenSSL/[>=1.0.2l]@conan/stable",
-    #    "zlib/1.2.11@conan/stable"
-    #)
-
-    def config_options(self):
-        if self.settings.os == 'Windows':
-            del self.options.fPIC
+    def configure(self):
+        del self.settings.compiler.libcxx
 
     def build_requirements(self):
-        if self.settings.os == 'Windows':
-            self.build_requires("msys2_installer/latest@bincrafters/stable")
+        if self.settings.compiler == 'Visual Studio':
+            self.build_requires("yasm_installer/[>=1.3]@bincrafters/stable")
 
     def source(self):
         source_url = "https://sourceforge.net/projects/mpg123/files/mpg123/{0}/mpg123-{0}.tar.bz2".format(self.version)
@@ -60,23 +42,30 @@ class Mpg123Conan(ConanFile):
         os.rename(extracted_dir, self.source_subfolder)
 
     def build(self):
-        self._build_configure()
+        if self.settings.compiler == 'Visual Studio':
+            self._build_vs()
+        else:
+            self._build_configure()
+
+    def _build_vs(self):
+        if not self.options.shared:
+            raise Exception('Only shared builds are supported for Visual Studio')
+        msbuild = MSBuild(self)
+        msbuild.build("{0}/ports/MSVC++/2015/win32/mpg123.sln".format(self.source_subfolder))
 
     def _build_configure(self):
         with tools.chdir(self.source_subfolder):
-            #with tools.environment_append(env_vars):
-            env_build = AutoToolsBuildEnvironment(self, win_bash=(self.settings.os == 'Windows'))
+            env_build = AutoToolsBuildEnvironment(self)
             env_build.fPIC = self.options.fPIC
             env_build.configure()
             env_build.make()
             #env_build.make(args=['install'])
 
     def package(self):
-        self.copy(pattern="LICENSE", dst="license", src=self.source_subfolder)
-        # If the CMakeLists.txt has a proper install method, the steps below may be redundant
-        # If so, you can just remove the lines below
-        include_folder = os.path.join(self.source_subfolder, "include")
-        self.copy(pattern="*", dst="include", src=include_folder)
+        self.copy(pattern="fmt123.h", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
+        self.copy(pattern="mpg123.h*", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
+        if self.settings.compiler == 'Visual Studio':
+            self.copy("mpg123.h", dst="include", src=os.path.join(self.source_subfolder, "ports", "MSVC++"))
         self.copy(pattern="*.dll", dst="bin", keep_path=False)
         self.copy(pattern="*.lib", dst="lib", keep_path=False)
         self.copy(pattern="*.a", dst="lib", keep_path=False)

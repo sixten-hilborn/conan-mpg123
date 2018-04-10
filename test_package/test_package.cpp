@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <mpg123.h>
 
 
 int main()
