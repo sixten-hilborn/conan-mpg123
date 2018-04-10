@@ -59,7 +59,6 @@ class Mpg123Conan(ConanFile):
             env_build.fPIC = self.options.fPIC
             env_build.configure()
             env_build.make()
-            #env_build.make(args=['install'])
 
     def package(self):
         self.copy(pattern="fmt123.h", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
@@ -69,8 +68,11 @@ class Mpg123Conan(ConanFile):
         self.copy(pattern="*mpg123.dll", dst="bin", keep_path=False)
         self.copy(pattern="*mpg123.lib", dst="lib", keep_path=False)
         self.copy(pattern="*mpg123.a", dst="lib", keep_path=False)
-        self.copy(pattern="*mpg123.so", dst="lib", keep_path=False)
+        self.copy(pattern="*mpg123.so*", dst="lib", keep_path=False, symlinks=True)
         self.copy(pattern="*mpg123.dylib", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        if self.settings.compiler == 'Visual Studio':
+            self.cpp_info.libs = ['libmpg123']
+        else:
+            self.cpp_info.libs = ['mpg123']
