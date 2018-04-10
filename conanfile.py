@@ -52,7 +52,7 @@ class Mpg123Conan(ConanFile):
             self.build_requires("msys2_installer/latest@bincrafters/stable")
 
     def source(self):
-        source_url = "https://sourceforge.net/projects/mpg123/files/mpg123/{0}/mpg123-{0}.tar.bz2/download".format(self.version)
+        source_url = "https://sourceforge.net/projects/mpg123/files/mpg123/{0}/mpg123-{0}.tar.bz2".format(self.version)
         tools.get(source_url)
         extracted_dir = self.name + "-" + self.version
 
