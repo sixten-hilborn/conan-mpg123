@@ -63,6 +63,12 @@ class Mpg123Conan(ConanFile):
             env_build.configure()
             env_build.make()
 
+    def package_id(self):
+        # Can only build for 2015+ when using Visual Studio because of project file version,
+        # however older VS can still link against binaries built with newer VS since it's a C library (stable ABI)
+        if self.settings.compiler == "Visual Studio" and int(str(self.settings.compiler.version)) <= 14:
+            self.info.settings.compiler.version = "VS2015"
+
     def package(self):
         self.copy(pattern="fmt123.h", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
         self.copy(pattern="mpg123.h*", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
