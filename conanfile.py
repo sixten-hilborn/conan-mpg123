@@ -5,8 +5,8 @@ from conans import ConanFile, CMake, tools
 import os
 
 
-class Mpg123Conan(ConanFile):
-    name = "mpg123"
+class Libmpg123Conan(ConanFile):
+    name = "libmpg123"
     version = "1.25.6"
     description = "Fast MPEG Audio decoder library"
     topics = ("conan", "libmpg123", "audio", "mpeg", "mp3")
