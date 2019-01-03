@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, AutoToolsBuildEnvironment, MSBuild, tools
 import os
 
 
@@ -43,7 +43,7 @@ class Libmpg123Conan(ConanFile):
     def source(self):
         source_url = "https://sourceforge.net/projects/mpg123/files/mpg123/{0}/mpg123-{0}.tar.bz2".format(self.version)
         tools.get(source_url)
-        extracted_dir = self.name + "-" + self.version
+        extracted_dir = "mpg123-" + self.version
 
         # Rename to "source_subfolder" is a convention to simplify later steps
         os.rename(extracted_dir, self._source_subfolder)
@@ -77,6 +77,7 @@ class Libmpg123Conan(ConanFile):
             self.info.settings.compiler.version = "VS2015"
 
     def package(self):
+        self.copy(pattern="COPYING", dst="licenses", src=self._source_subfolder)
         self.copy(pattern="fmt123.h", dst="include", src=os.path.join(self._source_subfolder, "src", "libmpg123"))
         self.copy(pattern="mpg123.h*", dst="include", src=os.path.join(self._source_subfolder, "src", "libmpg123"))
         if self.settings.compiler == 'Visual Studio':
