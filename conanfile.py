@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from conans import ConanFile, AutoToolsBuildEnvironment, MSBuild, tools
+from conans import ConanFile, CMake, tools
 import os
 
 
@@ -9,25 +9,32 @@ class Mpg123Conan(ConanFile):
     name = "mpg123"
     version = "1.25.6"
     description = "Fast MPEG Audio decoder library"
+    topics = ("conan", "libmpg123", "audio", "mpeg", "mp3")
     url = "https://github.com/sixten-hilborn/conan-mpg123"
     homepage = "https://www.mpg123.de"
-    license = "LGPL 2.1"
-    exports = ["LICENSE.md"]  # Packages the license for the conanfile.py
+    author = "Sixten Hilborn <sixten.hilborn@gmail.com>"
+    license = "LGPL-2.1"
+    exports = ["LICENSE.md"]
+
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
         "fPIC": [True, False]
     }
-    default_options = (
-        "shared=True",
-        "fPIC=True"
-    )
+    default_options = {
+        "shared": False,
+        "fPIC": True
+    }
 
-    source_subfolder = "source_subfolder"
-    build_subfolder = "build_subfolder"
+    _source_subfolder = "source_subfolder"
+    _build_subfolder = "build_subfolder"
 
     def configure(self):
         del self.settings.compiler.libcxx
+
+    def config_options(self):
+        if self.settings.os == 'Windows':
+            del self.options.fPIC
 
     def build_requirements(self):
         if self.settings.compiler == 'Visual Studio':
@@ -38,8 +45,8 @@ class Mpg123Conan(ConanFile):
         tools.get(source_url)
         extracted_dir = self.name + "-" + self.version
 
-        #Rename to "source_subfolder" is a convention to simplify later steps
-        os.rename(extracted_dir, self.source_subfolder)
+        # Rename to "source_subfolder" is a convention to simplify later steps
+        os.rename(extracted_dir, self._source_subfolder)
 
     def build(self):
         if self.settings.compiler == 'Visual Studio':
@@ -54,10 +61,10 @@ class Mpg123Conan(ConanFile):
         # suffix "x86" uses more CPU specific optimizations, however it doesn't compile for arch==x86, only arch==x86_64
         optimization_suffix = "x86" if self.settings.arch == "x86_64" else "Generic"
         build_type = "{0}_{1}{2}".format(self.settings.build_type, optimization_suffix, dll_suffix)
-        msbuild.build("{0}/ports/MSVC++/2015/win32/libmpg123/libmpg123.vcxproj".format(self.source_subfolder), build_type=build_type)
+        msbuild.build("{0}/ports/MSVC++/2015/win32/libmpg123/libmpg123.vcxproj".format(self._source_subfolder), build_type=build_type)
 
     def _build_configure(self):
-        with tools.chdir(self.source_subfolder):
+        with tools.chdir(self._source_subfolder):
             env_build = AutoToolsBuildEnvironment(self)
             env_build.fPIC = self.options.fPIC
             env_build.configure()
@@ -70,10 +77,10 @@ class Mpg123Conan(ConanFile):
             self.info.settings.compiler.version = "VS2015"
 
     def package(self):
-        self.copy(pattern="fmt123.h", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
-        self.copy(pattern="mpg123.h*", dst="include", src=os.path.join(self.source_subfolder, "src", "libmpg123"))
+        self.copy(pattern="fmt123.h", dst="include", src=os.path.join(self._source_subfolder, "src", "libmpg123"))
+        self.copy(pattern="mpg123.h*", dst="include", src=os.path.join(self._source_subfolder, "src", "libmpg123"))
         if self.settings.compiler == 'Visual Studio':
-            self.copy("mpg123.h", dst="include", src=os.path.join(self.source_subfolder, "ports", "MSVC++"))
+            self.copy("mpg123.h", dst="include", src=os.path.join(self._source_subfolder, "ports", "MSVC++"))
         self.copy(pattern="*mpg123.dll", dst="bin", keep_path=False)
         self.copy(pattern="*mpg123.lib", dst="lib", keep_path=False)
         self.copy(pattern="*mpg123.a", dst="lib", keep_path=False)
