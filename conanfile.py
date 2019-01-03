@@ -42,7 +42,7 @@ class Libmpg123Conan(ConanFile):
 
     def source(self):
         source_url = "https://sourceforge.net/projects/mpg123/files/mpg123/{0}/mpg123-{0}.tar.bz2".format(self.version)
-        tools.get(source_url)
+        tools.get(source_url, sha256="0f0458c9b87799bc2c9bf9455279cc4d305e245db43b51a39ef27afe025c5a8e")
         extracted_dir = "mpg123-" + self.version
 
         # Rename to "source_subfolder" is a convention to simplify later steps
