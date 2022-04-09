@@ -1,3 +1,5 @@
+**OBSOLETE**: Use https://github.com/conan-io/conan-center-index/tree/master/recipes/mpg123 instead.
+
 ## Package Status
 
 | Bintray | Windows | Linux & macOS |
